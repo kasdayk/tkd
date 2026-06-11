@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Spline+Sans+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <style>
 :root {
   --bg:         #f3f7f0;
@@ -399,7 +400,7 @@ td.ctr{text-align:center;}
       <input type="date" id="date-to" onchange="renderLacak()">
     </div>
     <button class="btn" onclick="resetFilter()">Reset Filter</button>
-    <button class="btn green" onclick="downloadCSV()">&#8595; Download CSV</button>
+    <button class="btn green" onclick="downloadExcel()">&#8595; Download Excel</button>
     <span class="filter-info" id="filter-info">Menampilkan semua transaksi</span>
   </div>
   <div class="table-wrap">
@@ -740,12 +741,13 @@ function resetFilter() {
   renderLacak();
 }
 
-function downloadCSV() {
+function downloadExcel() {
   const data = getFilteredData();
   const from = document.getElementById("date-from").value;
   const to   = document.getElementById("date-to").value;
 
-  const rows = [["Tanggal","Jenis Dana","Uraian","Periode","Nilai Kotor","Potongan","Nilai Bersih"]];
+  const header = ["Tanggal","Jenis Dana","Uraian","Periode","Nilai Kotor","Potongan","Nilai Bersih"];
+  const rows = [header];
   for (const r of data) {
     rows.push([
       r.tgl,
@@ -756,13 +758,41 @@ function downloadCSV() {
     ]);
   }
 
-  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\r\n");
-  const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+
+  // lebar kolom
+  ws["!cols"] = [
+    {wch:14}, {wch:22}, {wch:68}, {wch:12},
+    {wch:18}, {wch:16}, {wch:18}
+  ];
+
+  // style header (tebal + warna teal)
+  const range = XLSX.utils.decode_range(ws["!ref"]);
+  for (let C = range.s.c; C <= range.e.c; C++) {
+    const addr = XLSX.utils.encode_cell({r:0, c:C});
+    if (!ws[addr]) continue;
+    ws[addr].s = {
+      font:    { bold: true, color: { rgb: "FFFFFF" } },
+      fill:    { fgColor: { rgb: "0E4B47" } },
+      alignment: { horizontal: "center" }
+    };
+  }
+
+  // format angka ribuan untuk kolom nilai
+  for (let R = 1; R <= range.e.r; R++) {
+    for (const C of [4, 5, 6]) {
+      const addr = XLSX.utils.encode_cell({r:R, c:C});
+      if (ws[addr] && typeof ws[addr].v === "number") {
+        ws[addr].z = '#,##0';
+      }
+    }
+  }
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Lacak Salur TKD");
+
   const sfx = from && to ? `_${from}_sd_${to}` : from ? `_dari_${from}` : to ? `_sd_${to}` : "_semua";
-  a.href = url; a.download = `lacak_salur_tkd_yogya${sfx}.csv`; a.click();
-  URL.revokeObjectURL(url);
+  XLSX.writeFile(wb, `lacak_salur_tkd_yogya${sfx}.xlsx`);
 }
 
 // ════════════════════════════════════════════════════════════
