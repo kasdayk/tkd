@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Monitoring TKD — Pemerintah Kota Yogyakarta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Inter',Arial,sans-serif; font-size:13px; background:#eef2f7; color:#222; }
+
+/* ── TOPBAR ── */
+.topbar { background:linear-gradient(90deg,#1a3a6c 0%,#1a5ba8 100%); color:#fff; padding:12px 24px; display:flex; align-items:center; gap:14px; box-shadow:0 2px 8px rgba(0,0,0,.2); }
+.topbar-logo { font-size:26px; line-height:1; }
+.topbar-text { display:flex; flex-direction:column; gap:2px; }
+.topbar-name { font-size:14px; font-weight:800; letter-spacing:.3px; }
+.topbar-sub  { font-size:11px; opacity:.8; font-weight:400; }
+.topbar-right { margin-left:auto; text-align:right; }
+.topbar-right .year { font-size:22px; font-weight:800; opacity:.95; }
+.topbar-right .label { font-size:10px; opacity:.65; letter-spacing:.5px; text-transform:uppercase; }
+
+/* ── SUMMARY CARDS ── */
+.cards { display:flex; gap:14px; padding:18px 24px 0; }
+.card-stat { flex:1; background:#fff; border-radius:10px; padding:14px 18px; box-shadow:0 1px 5px rgba(0,0,0,.08); border-left:4px solid #1a5ba8; }
+.card-stat.green { border-color:#16a34a; }
+.card-stat.orange { border-color:#ea580c; }
+.card-stat .val { font-size:20px; font-weight:800; color:#1a3a6c; font-variant-numeric:tabular-nums; }
+.card-stat.green .val { color:#15803d; }
+.card-stat.orange .val { color:#c2410c; }
+.card-stat .lbl { font-size:11px; color:#888; margin-top:2px; font-weight:500; }
+
+/* ── PAGE ── */
+.page { padding:14px 24px 24px; }
+.breadcrumb { font-size:11px; color:#999; margin-bottom:5px; }
+.page-title { font-size:16px; font-weight:700; margin-bottom:12px; color:#1a3a6c; }
+
+/* ── FILTER CHIPS ── */
+.filter-bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:12px; }
+.chip-label { font-size:11px; color:#999; font-weight:500; }
+.chip { background:#e8f0fe; border:1px solid #c5d8f8; border-radius:20px; padding:3px 12px; font-size:12px; color:#1a4fc4; font-weight:600; }
+.chip-update { margin-left:auto; font-size:11px; color:#aaa; }
+
+/* ── TOOLBAR ── */
+.toolbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.btn-group { display:flex; gap:5px; }
+.btn { padding:5px 14px; border:1px solid #d0d8e8; background:#fff; border-radius:6px; cursor:pointer; font-size:12px; color:#555; font-family:'Inter',sans-serif; font-weight:500; transition:all .1s; }
+.btn:hover { background:#f0f5ff; border-color:#a8c0e8; }
+.btn.active { background:#1a5ba8; color:#fff; border-color:#1a5ba8; }
+.hint { font-size:11px; color:#bbb; }
+
+/* ── TABLE CARD ── */
+.table-wrap { background:#fff; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,.08); overflow:hidden; }
+table { width:100%; border-collapse:collapse; }
+thead th {
+  background:#1a3a6c; color:#fff; padding:10px 16px;
+  font-size:11px; font-weight:700; text-align:center;
+  position:sticky; top:0; z-index:2; letter-spacing:.3px; text-transform:uppercase;
+}
+thead th:first-child { text-align:left; width:52%; }
+thead th:nth-child(2), thead th:nth-child(3) { width:18%; }
+thead th:nth-child(4) { width:12%; }
+tbody tr { border-bottom:1px solid #f0f4fb; }
+tbody tr:hover { background:#f6f9ff; }
+td { padding:8px 16px; vertical-align:middle; }
+td.num {
+  text-align:right;
+  font-variant-numeric:tabular-nums;
+  font-size:12.5px;
+  font-weight:500;
+  letter-spacing:-.2px;
+}
+
+/* ── ROW LEVELS ── */
+.row-l1 td:first-child { font-weight:700; color:#0f2a50; font-size:13px; }
+.row-l2 td:first-child { padding-left:22px; font-weight:600; color:#1a3f70; }
+.row-l3 td:first-child { padding-left:40px; color:#334; }
+.row-l4 td:first-child { padding-left:58px; color:#667; font-size:12px; }
+
+/* ── TOTAL ROW ── */
+.row-total { background:#1a3a6c !important; }
+.row-total td { color:#fff !important; font-weight:700; font-variant-numeric:tabular-nums; }
+.row-total td:first-child { text-align:right; font-size:13px; }
+
+/* ── TOGGLE ARROW ── */
+.tog { cursor:pointer; display:inline-flex; align-items:center; gap:6px; user-select:none; width:100%; }
+.arrow { font-size:8px; color:#bbb; transition:transform .15s; flex-shrink:0; width:10px; display:inline-block; }
+.arrow.open { transform:rotate(90deg); color:#1a5ba8; }
+.no-arrow { width:10px; flex-shrink:0; display:inline-block; }
+
+/* ── RASIO CELL ── */
+.rasio-wrap { min-width:90px; }
+.rasio-num { font-size:12.5px; font-weight:700; font-variant-numeric:tabular-nums; }
+.bar-bg { background:#e8eef8; border-radius:4px; height:5px; margin-top:4px; }
+.bar-fill { height:5px; border-radius:4px; transition:width .3s; }
+.bar-fill.hi  { background:linear-gradient(90deg,#16a34a,#4ade80); }
+.bar-fill.mid { background:linear-gradient(90deg,#1a5ba8,#60a5fa); }
+.bar-fill.lo  { background:linear-gradient(90deg,#f59e0b,#fcd34d); }
+.bar-fill.zero { background:#e5e7eb; }
+
+/* ── BADGE ── */
+.badge-trx  { background:#dbeafe; color:#1d4ed8; border-radius:4px; padding:1px 6px; font-size:10px; font-weight:700; margin-left:6px; }
+.badge-sp2d { background:#d1fae5; color:#065f46; border-radius:4px; padding:1px 6px; font-size:10px; font-weight:700; }
+
+/* ── DETAIL PANEL ── */
+.detail-row > td { padding:0 !important; border-bottom:2px solid #c7d9f7; }
+.detail-panel { background:#f4f8ff; padding:12px 18px 16px 74px; }
+.detail-title { font-size:11px; font-weight:700; color:#1a3a6c; text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px; }
+.dtable { width:100%; border-collapse:collapse; background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,.07); }
+.dtable th { background:#dde8fb; color:#1e3a8a; font-size:11px; padding:7px 12px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; }
+.dtable th:first-child, .dtable th:nth-child(2) { text-align:left; }
+.dtable th:nth-child(3), .dtable th:nth-child(4), .dtable th:nth-child(5) { text-align:right; }
+.dtable th:nth-child(6) { text-align:center; }
+.dtable td { font-size:12px; padding:6px 12px; border-bottom:1px solid #f0f4ff; }
+.dtable td.num { text-align:right; font-variant-numeric:tabular-nums; font-weight:500; }
+.dtable td.ctr { text-align:center; }
+.dtable tr:last-child td { border-bottom:none; }
+.dtable tr.sum-row { background:#e8f0fe; font-weight:700; }
+.dtable tr.sum-row td.num { color:#1a3a6c; }
+.no-data { color:#ccc; font-style:italic; font-size:12px; padding:8px 0; }
+
+/* ── FOOTER ── */
+.footer { margin-top:14px; font-size:11px; color:#bbb; text-align:center; padding-bottom:20px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">🏛️</div>
+  <div class="topbar-text">
+    <div class="topbar-name">Pemerintah Kota Yogyakarta</div>
+    <div class="topbar-sub">Dashboard Monitoring Realisasi Transfer ke Daerah</div>
+  </div>
+  <div class="topbar-right">
+    <div class="year">2026</div>
+    <div class="label">Tahun Anggaran</div>
+  </div>
+</div>
+
+<div class="cards">
+  <div class="card-stat">
+    <div class="val">Rp 740,16 M</div>
+    <div class="lbl">Total Pagu TKD</div>
+  </div>
+  <div class="card-stat green">
+    <div class="val">Rp 355,20 M</div>
+    <div class="lbl">Total Realisasi</div>
+  </div>
+  <div class="card-stat orange">
+    <div class="val">47,99%</div>
+    <div class="lbl">Rasio Penyerapan</div>
+  </div>
+</div>
+
+<div class="page">
+  <div class="breadcrumb">TKD &rsaquo; Alokasi dan Realisasi</div>
+  <div class="page-title">Monitoring Realisasi Penyaluran</div>
+
+  <div class="filter-bar">
+    <span class="chip-label">Tahun</span><span class="chip">2026</span>
+    <span class="chip-label">Tanggal</span><span class="chip">1 Jan 2026 s/d 11 Jun 2026</span>
+    <span class="chip-label">Pemda</span><span class="chip">Kota Yogyakarta</span>
+    <span class="chip-update" id="last-update">Data per: 11 Jun 2026</span>
+  </div>
+
+  <div class="toolbar">
+    <div class="btn-group">
+      <button class="btn" onclick="collapseAll()">&#9633; Collapse</button>
+      <button class="btn" onclick="expandAll()">&#9635; Expand All</button>
+    </div>
+    <span class="hint">Klik baris terdalam untuk lihat riwayat penyaluran</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Uraian Akun</th>
+          <th>Pagu</th>
+          <th>Realisasi</th>
+          <th>Rasio</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="footer">Pemerintah Kota Yogyakarta &bull; Data bersumber dari SIKD Direktorat Jenderal Perimbangan Keuangan &bull; Kementerian Keuangan RI</div>
+</div>
+
+<script>
+// ============================================================
+//  DATA ALOKASI & REALISASI
+// ============================================================
+const alokasiRaw = [
+  ["61",     "Dana Bagi Hasil",                                                                        20832924000,   5459824500,  "26.21"],
+  ["6111",   "Transfer Dana Bagi Hasil Pajak Penghasilan Perorangan",                                  20436099000,   5109024750,  "25.00"],
+  ["611111", "Belanja Dana Bagi Hasil PPh Pasal 21",                                                   18784182000,   4696045500,  "25.00"],
+  ["001",    "Alokasi DBH Pajak yang disalurkan",                                                      18784182000,   4696045500,  "25.00"],
+  ["611112", "Belanja Dana Bagi Hasil PPh Pasal 25/29 OP",                                             1651917000,    412979250,   "25.00"],
+  ["001",    "Alokasi DBH Pajak yang disalurkan",                                                      1651917000,    412979250,   "25.00"],
+  ["6112",   "Transfer Dana Bagi Hasil PBB",                                                           137233000,     34308250,    "25.00"],
+  ["611212", "Belanja Dana Bagi Hasil PBB untuk Kabupaten/Kota",                                       137233000,     34308250,    "25.00"],
+  ["001",    "Alokasi DBH Pajak yang disalurkan",                                                      137233000,     34308250,    "25.00"],
+  ["6125",   "Transfer DBH-SDA Kehutanan",                                                             12337000,      12337000,    "100.00"],
+  ["612512", "Belanja Dana Bagi Hasil Kehutanan - PSDH",                                               12337000,      12337000,    "100.00"],
+  ["002",    "Alokasi DBH SDA yang disalurkan",                                                        12337000,      12337000,    "100.00"],
+  ["6126",   "Transfer DBH Perikanan",                                                                 247255000,     98902000,    "40.00"],
+  ["612611", "Belanja Dana Bagi Hasil Perikanan",                                                      247255000,     98902000,    "40.00"],
+  ["002",    "Alokasi DBH SDA yang disalurkan",                                                        247255000,     98902000,    "40.00"],
+  ["62",     "Dana Alokasi Umum",                                                                      566790768000,  276136098000,"48.72"],
+  ["6211",   "Transfer Dana Alokasi Umum",                                                             566790768000,  276136098000,"48.72"],
+  ["621111", "Belanja Dana Alokasi Umum",                                                              552272203000,  276136098000,"50.00"],
+  ["004",    "Alokasi DAU yang tidak ditentukan penggunaannya yang disalurkan",                        552272203000,  276136098000,"50.00"],
+  ["621122", "Transfer DAU Dukungan Pembangunan Sarana dan Prasarana, Pemberdayaan Masyarakat di Kelurahan", 9000000000, 0,        "0.00"],
+  ["008",    "Alokasi DAU Dukungan Pembangunan Sarana dan Prasarana, Pemberdayaan Masyarakat di Kelurahan yang disalurkan", 9000000000, 0, "0.00"],
+  ["621124", "Transfer Dana Alokasi Umum Dukungan Bidang Kesehatan",                                   5518565000,    0,           "0.00"],
+  ["010",    "Alokasi DAU Dukungan Bidang Kesehatan yang disalurkan",                                  5518565000,    0,           "0.00"],
+  ["65",     "Dana Alokasi Khusus Nonfisik",                                                           152535845000,  73608835100, "48.26"],
+  ["6541",   "Dana Tunjangan Profesi Guru ASN Daerah (TPG) dan Tunjangan Khusus Guru ASN di Daerah Khusus", 67558074000, 30216665200, "44.73"],
+  ["654111", "Dana Tunjangan Profesi Guru ASN Daerah",                                                 67558074000,   30216665200, "44.73"],
+  ["003",    "Alokasi Dana Tunjangan Profesi Guru ASN Daerah yang disalurkan",                         67558074000,   30216665200, "44.73"],
+  ["6542",   "Dana Tambahan Penghasilan Guru ASN Daerah",                                              36000000,      8750000,     "24.31"],
+  ["654211", "Dana Tambahan Penghasilan Guru ASN Daerah",                                              36000000,      8750000,     "24.31"],
+  ["004",    "Alokasi Dana Tambahan Penghasilan Guru ASN Daerah yang disalurkan",                      36000000,      8750000,     "24.31"],
+  ["6543",   "Dana Bantuan Operasional Sekolah (BOS)",                                                 58883460000,   28933480000, "49.14"],
+  ["654311", "Dana Bantuan Operasional Sekolah",                                                       58883460000,   28933480000, "49.14"],
+  ["001",    "Alokasi Dana Bantuan Operasional Sekolah Reguler yang disalurkan",                       57866960000,   28933480000, "50.00"],
+  ["015",    "Alokasi Dana Bantuan Operasional Sekolah Kinerja yang disalurkan",                       1016500000,    0,           "0.00"],
+  ["6547",   "Dana Bantuan Operasional Kesehatan dan Bantuan Operasional Keluarga Berencana",          15757781000,   9404214900,  "59.68"],
+  ["654711", "Dana Bantuan Operasional Kesehatan",                                                     13398861000,   8224754900,  "61.38"],
+  ["006",    "Alokasi Dana Bantuan Operasional Kesehatan Dinas yang disalurkan",                       4263566000,    2131783000,  "50.00"],
+  ["031",    "Alokasi Dana Bantuan Operasional Kesehatan Puskesmas yang disalurkan",                   8716100000,    5883374400,  "67.50"],
+  ["035",    "Alokasi Dana Bantuan Operasional Kesehatan Pengawasan Obat Dan Makanan yang disalurkan", 419195000,     209597500,   "50.00"],
+  ["654712", "Dana Bantuan Operasional Keluarga Berencana",                                            2358920000,    1179460000,  "50.00"],
+  ["007",    "Alokasi Dana Bantuan Operasional Keluarga Berencana yang disalurkan",                    2358920000,    1179460000,  "50.00"],
+  ["6549",   "Dana Bantuan Operasional Penyelenggaraan - Pendidikan Anak Usia Dini",                   9793530000,    4792225000,  "48.93"],
+  ["654911", "Dana Bantuan Operasional Penyelenggaraan - Pendidikan Anak Usia Dini",                   7070520000,    3475720000,  "49.16"],
+  ["002",    "Alokasi Dana BOP PAUD Reguler yang disalurkan",                                          6988020000,    3475720000,  "49.74"],
+  ["029",    "Alokasi Dana BOP PAUD Kinerja yang disalurkan",                                          82500000,      0,           "0.00"],
+  ["654912", "Dana Bantuan Operasional Penyelenggaraan (BOP) Pendidikan Kesetaraan",                   2723010000,    1316505000,  "48.35"],
+  ["010",    "Alokasi Dana BOP Pendidikan Kesetaraan Reguler yang disalurkan",                         2633010000,    1316505000,  "50.00"],
+  ["030",    "Alokasi Dana BOP Pendidikan Kesetaraan Kinerja yang disalurkan",                         90000000,      0,           "0.00"],
+  ["6552",   "Dana Pelayanan Perlindungan Perempuan dan Anak",                                         507000000,     253500000,   "50.00"],
+  ["655211", "Dana Pelayanan Perlindungan Perempuan dan Anak",                                         507000000,     253500000,   "50.00"],
+  ["019",    "Alokasi Dana Pelayanan Perlindungan Perempuan dan Anak yang disalurkan",                 507000000,     253500000,   "50.00"],
+];
+
+// ============================================================
+//  DATA LACAK SALUR — di-update otomatis oleh update.py
+// ============================================================
+const lacakRaw = [
+  {tgl:"02-06-2026", alok:"004", par:"654211", periode:"",        kotor:1500000,    pot:90000,     bersih:1410000},
+  {tgl:"02-06-2026", alok:"031", par:"654711", periode:"TAHAP 2", kotor:2347008800, pot:0,         bersih:2347008800},
+  {tgl:"29-05-2026", alok:"002", par:"612611", periode:"MEI",     kotor:37088250,   pot:0,         bersih:37088250},
+  {tgl:"29-05-2026", alok:"004", par:"621111", periode:"JUNI",    kotor:46022683000,pot:0,         bersih:46022683000},
+  {tgl:"29-05-2026", alok:"003", par:"654111", periode:"",        kotor:5951635700, pot:470704262, bersih:5480931438},
+  {tgl:"26-05-2026", alok:"031", par:"654711", periode:"TAHAP 2", kotor:921535600,  pot:0,         bersih:921535600},
+  {tgl:"18-05-2026", alok:"003", par:"654111", periode:"",        kotor:58438300,   pot:7309378,   bersih:51128922},
+  {tgl:"30-04-2026", alok:"001", par:"611111", periode:"",        kotor:2817627300, pot:0,         bersih:2817627300},
+  {tgl:"30-04-2026", alok:"001", par:"611112", periode:"",        kotor:247787550,  pot:0,         bersih:247787550},
+  {tgl:"30-04-2026", alok:"001", par:"611212", periode:"",        kotor:13240500,   pot:0,         bersih:13240500},
+  {tgl:"30-04-2026", alok:"001", par:"611212", periode:"",        kotor:7247400,    pot:0,         bersih:7247400},
+  {tgl:"30-04-2026", alok:"001", par:"611212", periode:"",        kotor:97050,      pot:0,         bersih:97050},
+  {tgl:"30-04-2026", alok:"004", par:"621111", periode:"MEI",     kotor:46022683000,pot:0,         bersih:46022683000},
+  {tgl:"29-04-2026", alok:"003", par:"654111", periode:"",        kotor:5888592000, pot:466864817, bersih:5421727183},
+  {tgl:"29-04-2026", alok:"004", par:"654211", periode:"",        kotor:1500000,    pot:90000,     bersih:1410000},
+  {tgl:"27-04-2026", alok:"019", par:"655211", periode:"",        kotor:253500000,  pot:12342700,  bersih:241157300},
+  {tgl:"21-04-2026", alok:"003", par:"654111", periode:"",        kotor:86622800,   pot:5197368,   bersih:81425432},
+  {tgl:"21-04-2026", alok:"003", par:"654111", periode:"",        kotor:558694900,  pot:33521694,  bersih:525173206},
+  {tgl:"21-04-2026", alok:"003", par:"654111", periode:"",        kotor:558694900,  pot:33521694,  bersih:525173206},
+  {tgl:"21-04-2026", alok:"004", par:"654211", periode:"",        kotor:250000,     pot:15000,     bersih:235000},
+  {tgl:"15-04-2026", alok:"035", par:"654711", periode:"",        kotor:209597500,  pot:16738630,  bersih:192858870},
+  {tgl:"31-03-2026", alok:"004", par:"621111", periode:"APRIL",   kotor:46022683000,pot:0,         bersih:46022683000},
+  {tgl:"26-03-2026", alok:"002", par:"612611", periode:"MARET",   kotor:37088250,   pot:0,         bersih:37088250},
+  {tgl:"26-03-2026", alok:"006", par:"654711", periode:"TAHAP 1", kotor:2131783000, pot:50104543,  bersih:2081678457},
+  {tgl:"16-03-2026", alok:"003", par:"654111", periode:"",        kotor:508204300,  pot:32587378,  bersih:475616922},
+  {tgl:"16-03-2026", alok:"003", par:"654111", periode:"",        kotor:153880600,  pot:21743746,  bersih:132136854},
+  {tgl:"16-03-2026", alok:"003", par:"654111", periode:"",        kotor:5381994500, pot:439939864, bersih:4942054636},
+  {tgl:"16-03-2026", alok:"004", par:"654211", periode:"",        kotor:2000000,    pot:107500,    bersih:1892500},
+  {tgl:"16-03-2026", alok:"004", par:"654211", periode:"",        kotor:1750000,    pot:105000,    bersih:1645000},
+  {tgl:"16-03-2026", alok:"004", par:"654211", periode:"",        kotor:1750000,    pot:105000,    bersih:1645000},
+  {tgl:"16-03-2026", alok:"007", par:"654712", periode:"",        kotor:1179460000, pot:51577026,  bersih:1127882974},
+  {tgl:"27-02-2026", alok:"004", par:"621111", periode:"MARET",   kotor:46022683000,pot:0,         bersih:46022683000},
+  {tgl:"26-02-2026", alok:"002", par:"612512", periode:"",        kotor:12337000,   pot:0,         bersih:12337000},
+  {tgl:"26-02-2026", alok:"003", par:"654111", periode:"",        kotor:529692700,  pot:51926929,  bersih:477765771},
+  {tgl:"26-02-2026", alok:"003", par:"654111", periode:"",        kotor:5321902300, pot:427872893, bersih:4894029407},
+  {tgl:"25-02-2026", alok:"001", par:"611111", periode:"",        kotor:1878418200, pot:0,         bersih:1878418200},
+  {tgl:"25-02-2026", alok:"001", par:"611112", periode:"",        kotor:165191700,  pot:0,         bersih:165191700},
+  {tgl:"25-02-2026", alok:"001", par:"611212", periode:"",        kotor:64700,      pot:0,         bersih:64700},
+  {tgl:"25-02-2026", alok:"001", par:"611212", periode:"",        kotor:8827000,    pot:0,         bersih:8827000},
+  {tgl:"25-02-2026", alok:"001", par:"611212", periode:"",        kotor:4831600,    pot:0,         bersih:4831600},
+  {tgl:"18-02-2026", alok:"031", par:"654711", periode:"TAHAP 1", kotor:2614830000, pot:210452978, bersih:2404377022},
+  {tgl:"11-02-2026", alok:"002", par:"654911", periode:"",        kotor:19530000,   pot:0,         bersih:19530000},
+  {tgl:"02-02-2026", alok:"003", par:"654111", periode:"",        kotor:2826014400, pot:220673644, bersih:2605340756},
+  {tgl:"02-02-2026", alok:"003", par:"654111", periode:"",        kotor:267686400,  pot:40152960,  bersih:227533440},
+  {tgl:"30-01-2026", alok:"004", par:"621111", periode:"FEB",     kotor:46022683000,pot:0,         bersih:46022683000},
+  {tgl:"27-01-2026", alok:"003", par:"654111", periode:"",        kotor:2124611400, pot:177869371, bersih:1946742029},
+  {tgl:"20-01-2026", alok:"001", par:"654311", periode:"",        kotor:28933480000,pot:0,         bersih:28933480000},
+  {tgl:"14-01-2026", alok:"002", par:"612611", periode:"",        kotor:24725500,   pot:0,         bersih:24725500},
+  {tgl:"14-01-2026", alok:"002", par:"654911", periode:"",        kotor:3456190000, pot:0,         bersih:3456190000},
+  {tgl:"14-01-2026", alok:"010", par:"654912", periode:"",        kotor:1316505000, pot:0,         bersih:1316505000},
+  {tgl:"02-01-2026", alok:"004", par:"621111", periode:"JAN",     kotor:46022683000,pot:0,         bersih:46022683000},
+];
+
+// ============================================================
+//  LOOKUP & TREE
+// ============================================================
+const lacakMap = {};
+for (const r of lacakRaw) {
+  const k = r.par + "|" + r.alok;
+  if (!lacakMap[k]) lacakMap[k] = [];
+  lacakMap[k].push(r);
+}
+
+function buildTree() {
+  const roots = [];
+  let p1=null,p2=null,p3=null;
+  for (const [kode,uraian,pagu,real,rasio] of alokasiRaw) {
+    const n = {kode,uraian,pagu,real,rasio,children:[],parentKode:null};
+    if      (kode.length===2) { roots.push(n); p1=n; p2=null; p3=null; }
+    else if (kode.length===4) { p1.children.push(n); p2=n; p3=null; }
+    else if (kode.length===6) { p2.children.push(n); p3=n; }
+    else                      { n.parentKode=p3.kode; p3.children.push(n); }
+  }
+  return roots;
+}
+const tree = buildTree();
+const TOTAL_PAGU = 740159537000;
+const TOTAL_REAL = 355204757600;
+
+// ============================================================
+//  STATE
+// ============================================================
+const expanded = new Set();
+const detOpen  = new Set();
+
+// ============================================================
+//  HELPERS
+// ============================================================
+function fmt(n) {
+  if (!n) return "0";
+  return n.toLocaleString("id-ID");
+}
+
+function barClass(pct) {
+  const v = parseFloat(pct);
+  if (v >= 50) return "hi";
+  if (v > 0)   return "mid";
+  return v === 0 ? "zero" : "lo";
+}
+
+function rasioCell(rasio) {
+  const pct = parseFloat(rasio);
+  const w   = Math.min(100, pct);
+  const cls = barClass(rasio);
+  const color = cls==="hi" ? "#15803d" : cls==="mid" ? "#1a5ba8" : cls==="lo" ? "#b45309" : "#999";
+  return `<div class="rasio-wrap">
+    <div class="rasio-num" style="color:${color}">${rasio}%</div>
+    <div class="bar-bg"><div class="bar-fill ${cls}" style="width:${w}%"></div></div>
+  </div>`;
+}
+
+// ============================================================
+//  DETAIL PANEL
+// ============================================================
+function renderDetail(par, alok) {
+  const entries = lacakMap[par+"|"+alok] || [];
+  if (!entries.length) return `<div class="detail-panel">
+    <div class="detail-title">Riwayat Penyaluran</div>
+    <div class="no-data">Belum ada data penyaluran tercatat.</div>
+  </div>`;
+
+  let sumK=0,sumP=0,sumB=0,rows="";
+  for (const e of entries) {
+    sumK+=e.kotor; sumP+=e.pot; sumB+=e.bersih;
+    rows+=`<tr>
+      <td>${e.tgl}</td>
+      <td>${e.periode||"—"}</td>
+      <td class="num">${fmt(e.kotor)}</td>
+      <td class="num">${e.pot ? fmt(e.pot) : "—"}</td>
+      <td class="num">${fmt(e.bersih)}</td>
+      <td class="ctr"><span class="badge-sp2d">SP2D</span></td>
+    </tr>`;
+  }
+
+  return `<div class="detail-panel">
+    <div class="detail-title">Riwayat Penyaluran — ${entries.length} Transaksi</div>
+    <table class="dtable">
+      <thead><tr>
+        <th>Tanggal Salur</th><th>Periode</th>
+        <th>Nilai Kotor</th><th>Potongan</th><th>Nilai Bersih</th><th>Status</th>
+      </tr></thead>
+      <tbody>
+        ${rows}
+        <tr class="sum-row">
+          <td colspan="2">TOTAL (${entries.length} transaksi)</td>
+          <td class="num">${fmt(sumK)}</td>
+          <td class="num">${sumP ? fmt(sumP) : "—"}</td>
+          <td class="num">${fmt(sumB)}</td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>`;
+}
+
+// ============================================================
+//  RENDER
+// ============================================================
+function render() {
+  let html="";
+  for (const l1 of tree) {
+    const id1=`n_${l1.kode}`, e1=expanded.has(id1);
+    html+=`<tr class="row-l1"><td>
+      <span class="tog" onclick="toggle('${id1}')">
+        <span class="arrow ${e1?'open':''}">&#9654;</span>${l1.kode}&emsp;${l1.uraian}
+      </span></td>
+      <td class="num">${fmt(l1.pagu)}</td>
+      <td class="num">${fmt(l1.real)}</td>
+      <td>${rasioCell(l1.rasio)}</td></tr>`;
+    if (!e1) continue;
+
+    for (const l2 of l1.children) {
+      const id2=`${id1}_${l2.kode}`, e2=expanded.has(id2);
+      html+=`<tr class="row-l2"><td>
+        <span class="tog" onclick="toggle('${id2}')">
+          <span class="arrow ${e2?'open':''}">&#9654;</span>${l2.kode}&emsp;${l2.uraian}
+        </span></td>
+        <td class="num">${fmt(l2.pagu)}</td>
+        <td class="num">${fmt(l2.real)}</td>
+        <td>${rasioCell(l2.rasio)}</td></tr>`;
+      if (!e2) continue;
+
+      for (const l3 of l2.children) {
+        const id3=`${id2}_${l3.kode}`, e3=expanded.has(id3);
+        const hasKids=l3.children.length>0;
+        html+=`<tr class="row-l3"><td>
+          ${hasKids
+            ? `<span class="tog" onclick="toggle('${id3}')">
+                <span class="arrow ${e3?'open':''}">&#9654;</span>${l3.kode}&emsp;${l3.uraian}
+               </span>`
+            : `<span><span class="no-arrow"></span>${l3.kode}&emsp;${l3.uraian}</span>`
+          }</td>
+          <td class="num">${fmt(l3.pagu)}</td>
+          <td class="num">${fmt(l3.real)}</td>
+          <td>${rasioCell(l3.rasio)}</td></tr>`;
+        if (!e3||!hasKids) continue;
+
+        for (const l4 of l3.children) {
+          const id4=`${id3}_${l4.kode}`, don=detOpen.has(id4);
+          const trxs=lacakMap[l3.kode+"|"+l4.kode];
+          const badge=trxs?`<span class="badge-trx">${trxs.length} transaksi</span>`:"";
+          html+=`<tr class="row-l4"><td>
+            <span class="tog" onclick="toggleDet('${id4}','${l3.kode}','${l4.kode}')">
+              <span class="arrow ${don?'open':''}">&#9654;</span>${l4.kode}&emsp;${l4.uraian}${badge}
+            </span></td>
+            <td class="num">${fmt(l4.pagu)}</td>
+            <td class="num">${fmt(l4.real)}</td>
+            <td>${rasioCell(l4.rasio)}</td></tr>`;
+          if (don) html+=`<tr class="detail-row"><td colspan="4">${renderDetail(l3.kode,l4.kode)}</td></tr>`;
+        }
+      }
+    }
+  }
+  const rasioTotal=((TOTAL_REAL/TOTAL_PAGU)*100).toFixed(2);
+  html+=`<tr class="row-total">
+    <td>JUMLAH KESELURUHAN</td>
+    <td class="num">${fmt(TOTAL_PAGU)}</td>
+    <td class="num">${fmt(TOTAL_REAL)}</td>
+    <td style="text-align:right;padding-right:16px;font-variant-numeric:tabular-nums">${rasioTotal}%</td>
+  </tr>`;
+  document.getElementById("tbody").innerHTML=html;
+}
+
+function toggle(id) {
+  if (expanded.has(id)) {
+    for (const k of [...expanded]) if(k===id||k.startsWith(id+"_")) expanded.delete(k);
+    for (const k of [...detOpen])  if(k.startsWith(id)) detOpen.delete(k);
+  } else expanded.add(id);
+  render();
+}
+function toggleDet(id) {
+  detOpen.has(id)?detOpen.delete(id):detOpen.add(id);
+  render();
+}
+function collapseAll() { expanded.clear(); detOpen.clear(); render(); }
+function expandAll() {
+  let p1=null,p2=null,p3=null;
+  for (const [kode] of alokasiRaw) {
+    if      (kode.length===2) { p1=kode; p2=null; p3=null; expanded.add(`n_${p1}`); }
+    else if (kode.length===4) { p2=kode; p3=null; expanded.add(`n_${p1}_${p2}`); }
+    else if (kode.length===6) { p3=kode; expanded.add(`n_${p1}_${p2}_${p3}`); }
+  }
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
