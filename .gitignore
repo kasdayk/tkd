@@ -11,3 +11,6 @@ dashboard.html
 *.PNG
 *.jpeg
 *.jpg
+# Kecualikan logo resmi di folder uploads
+!uploads/*.png
+!uploads/*.PNG
