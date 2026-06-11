@@ -42,42 +42,63 @@ def download_lacak_salur():
         print("  Buka https://sikd.kemenkeu.go.id ...")
         page.goto(SIKD_URL, wait_until="networkidle")
 
-        # Step 2: Kalau ada tombol "Login" di halaman utama, klik dulu
+        # Step 2: Klik tombol Login → akan redirect ke sso.kemenkeu.go.id
         login_link_selectors = [
             "a:has-text('Login')", "a:has-text('Masuk')",
             "a:has-text('Sign In')", "button:has-text('Login')",
-            "a[href*='login']", "a[href*='auth']",
+            "a[href*='login']", "a[href*='auth']", "a[href*='sso']",
         ]
         for sel in login_link_selectors:
             if page.locator(sel).count():
-                print("  Klik tombol Login...")
+                print("  Klik tombol Login, tunggu redirect ke SSO...")
                 page.click(sel)
                 page.wait_for_load_state("networkidle")
                 break
 
-        # Step 3: Isi form username/password (bisa di halaman SSO setelah redirect)
-        print(f"  URL login: {page.url}")
+        # Step 3: Sekarang di sso.kemenkeu.go.id — isi form SSO
+        print(f"  URL SSO: {page.url}")
         page.wait_for_selector("input[type='password']", timeout=15000)
 
-        for sel in ["input[name='username']", "#username",
-                    "input[name='email']", "input[type='text']",
-                    "input[type='email']"]:
-            if page.locator(sel).count():
-                page.fill(sel, USERNAME); break
+        # SSO Kemenkeu (IdentityServer4) pakai field name: Username & Password
+        user_selectors = [
+            "input[name='Username']",      # IdentityServer4 default
+            "input[name='Input.Username']", # IS4 dengan Input binding
+            "input[name='username']",
+            "input[id='Username']",
+            "input[type='text']",
+        ]
+        pass_selectors = [
+            "input[name='Password']",
+            "input[name='Input.Password']",
+            "input[name='password']",
+            "input[id='Password']",
+            "input[type='password']",
+        ]
 
-        for sel in ["input[name='password']", "#password", "input[type='password']"]:
+        for sel in user_selectors:
             if page.locator(sel).count():
-                page.fill(sel, PASSWORD); break
+                page.fill(sel, USERNAME)
+                print(f"  Username diisi ({sel})")
+                break
 
-        # Step 4: Submit form login
+        for sel in pass_selectors:
+            if page.locator(sel).count():
+                page.fill(sel, PASSWORD)
+                print(f"  Password diisi ({sel})")
+                break
+
+        # Step 4: Submit → SSO redirect balik ke SIKD
         for sel in ["button[type='submit']", "input[type='submit']",
-                    "button:has-text('Login')", "button:has-text('Masuk')",
-                    "button:has-text('Sign In')"]:
+                    "button[name='button']", "button:has-text('Login')",
+                    "button:has-text('Masuk')", "button:has-text('Sign In')"]:
             if page.locator(sel).count():
-                page.click(sel); break
+                page.click(sel)
+                break
 
-        page.wait_for_load_state("networkidle", timeout=30000)
-        print(f"  Login selesai, URL sekarang: {page.url}")
+        # Tunggu redirect balik ke sikd.kemenkeu.go.id
+        page.wait_for_url("**/sikd.kemenkeu.go.id/**", timeout=30000)
+        page.wait_for_load_state("networkidle")
+        print(f"  Login berhasil! URL: {page.url}")
         print("  Navigasi ke halaman Lacak Salur...")
 
         # Buka halaman tracking
