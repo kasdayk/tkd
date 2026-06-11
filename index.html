@@ -55,8 +55,8 @@ body{
 /* ═══ HEADER ═══ */
 .masthead{display:flex;align-items:center;gap:16px;margin-bottom:22px;}
 .crest{height:58px;width:auto;flex-shrink:0;filter:drop-shadow(0 4px 10px rgba(28,53,48,.18));}
-.mast-name{font-size:21px;font-weight:800;letter-spacing:-.02em;color:var(--teal-deep);line-height:1.2;}
-.mast-sub{font-size:12.5px;font-weight:600;color:var(--teal);margin-top:2px;}
+.mast-name{font-size:30px;font-weight:800;letter-spacing:-.03em;color:var(--teal-deep);line-height:1.1;}
+.mast-sub{font-size:12px;font-weight:400;color:var(--muted);margin-top:4px;letter-spacing:.01em;}
 .live{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--muted);font-weight:600;}
 .pulse{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2.2s cubic-bezier(.4,0,.6,1) infinite;}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(77,143,47,.4);}70%{box-shadow:0 0 0 8px rgba(77,143,47,0);}100%{box-shadow:0 0 0 0 rgba(77,143,47,0);}}
@@ -98,31 +98,35 @@ body{
 }
 .hero-main .content{position:absolute;left:34px;right:34px;bottom:30px;color:#fff;}
 .hero-main .tag{
-  position:absolute;top:24px;left:34px;
-  background:rgba(255,255,255,.88);backdrop-filter:blur(8px);
-  color:var(--teal-deep);border-radius:99px;padding:7px 16px;
-  font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+  position:absolute;top:28px;left:34px;
+  background:rgba(255,255,255,.92);backdrop-filter:blur(10px);
+  color:var(--teal-deep);border-radius:99px;padding:11px 24px;
+  font-size:13.5px;font-weight:700;letter-spacing:.04em;
 }
-.hero-main .big{font-size:88px;font-weight:800;letter-spacing:-.045em;line-height:.95;font-variant-numeric:tabular-nums;}
-.hero-main .big .sym{font-size:38px;font-weight:700;color:var(--lime);}
-.hero-main .cap{font-size:14px;font-weight:600;opacity:.9;margin-top:8px;}
+.hero-main .eyebrow{font-size:11px;font-weight:400;letter-spacing:.32em;text-transform:uppercase;opacity:.55;margin-bottom:6px;}
+.hero-main .big{font-size:92px;font-weight:800;letter-spacing:-.05em;line-height:.92;font-variant-numeric:tabular-nums;}
+.hero-main .big .sym{font-size:40px;font-weight:300;color:var(--lime);vertical-align:super;margin-left:3px;}
+.hero-main .cap{font-size:15px;font-weight:400;opacity:.8;margin-top:12px;letter-spacing:.01em;}
 .hero-main .track{margin-top:18px;height:9px;border-radius:99px;background:rgba(255,255,255,.22);overflow:hidden;}
 .hero-main .fill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--teal),var(--lime));transition:width 1.6s cubic-bezier(.2,.8,.2,1);}
 
 /* Stat cards */
-.stat-card{min-height:120px;display:flex;align-items:stretch;}
+.stat-card{min-height:130px;}
 .stat-card.d1{animation-delay:.08s;}
 .stat-card.d2{animation-delay:.16s;}
-.stat-card .pic{position:relative;width:38%;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;}
-.stat-card.d1 .pic{background:linear-gradient(145deg,#0a3a37,#1a7068);}
-.stat-card.d2 .pic{background:linear-gradient(145deg,#1e4d10,#4d8f2f);}
-.stat-card .pic .ico{font-size:48px;opacity:.75;}
-.stat-card .body{flex:1;background:var(--card);padding:20px 24px;display:flex;flex-direction:column;justify-content:center;gap:5px;}
-.stat-card .lbl{font-size:10px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);}
-.stat-card .val{font-family:var(--mono);font-size:27px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--teal-deep);}
+.stat-card .body{
+  width:100%;
+  background:rgba(255,255,255,.52);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+  padding:28px 32px;
+  display:flex;flex-direction:column;justify-content:center;gap:6px;
+}
+.stat-card .lbl{font-size:9.5px;font-weight:700;letter-spacing:.26em;text-transform:uppercase;color:var(--muted);}
+.stat-card .val{font-family:var(--mono);font-size:30px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--teal-deep);}
 .stat-card.green-card .val{color:var(--green-deep);}
-.stat-card .val .rp{font-size:13px;font-weight:500;color:var(--muted);margin-right:6px;}
-.stat-card .val .unit{font-size:13px;font-weight:500;color:var(--muted);margin-left:6px;}
+.stat-card .val .rp{font-size:14px;font-weight:400;color:var(--muted);margin-right:7px;}
+.stat-card .val .unit{font-size:14px;font-weight:400;color:var(--muted);margin-left:7px;}
 .stat-card .compo-bar{display:flex;height:9px;border-radius:99px;overflow:hidden;background:var(--bg-2);margin-top:6px;}
 .compo-seg{width:0;transition:width 1.4s cubic-bezier(.2,.8,.2,1);}
 .compo-seg.dbh{background:var(--teal);}
@@ -136,26 +140,33 @@ body{
 /* ═══ STRIP ═══ */
 .strip{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-bottom:24px;}
 .strip-card{
-  position:relative;border-radius:20px;overflow:hidden;height:108px;
-  box-shadow:var(--shadow-soft);display:flex;align-items:flex-end;
+  position:relative;border-radius:20px;overflow:hidden;height:138px;
+  box-shadow:var(--shadow-soft);
   animation:rise .55s cubic-bezier(.2,.8,.2,1) .22s backwards;
 }
-.strip-card.s1{background:linear-gradient(145deg,#0a3035,#2f9c8f);}
-.strip-card.s2{background:linear-gradient(145deg,#1a3d0a,#5da832);}
-.strip-card.s3{background:linear-gradient(145deg,#0d3d2e,#9dc83b);}
+.strip-card.s1{background:linear-gradient(135deg,#062830 0%,#1a6060 60%,#2f9c8f 100%);}
+.strip-card.s2{background:linear-gradient(135deg,#0e2d06 0%,#2e6318 60%,#5da832 100%);}
+.strip-card.s3{background:linear-gradient(135deg,#0e2d1c 0%,#3a6e30 60%,#9dc83b 100%);}
 .strip-card::before{
-  content:"";position:absolute;top:-40px;right:-40px;
-  width:160px;height:160px;border-radius:50%;
-  background:rgba(255,255,255,.07);
+  content:"";position:absolute;top:-50px;right:-50px;
+  width:200px;height:200px;border-radius:50%;
+  background:rgba(255,255,255,.06);pointer-events:none;
 }
 .strip-card .cap{
-  position:relative;z-index:1;width:100%;
-  padding:14px 20px;
-  background:linear-gradient(0deg,rgba(0,0,0,.45),transparent);
-  color:#fff;font-size:12.5px;font-weight:700;
-  display:flex;align-items:center;justify-content:space-between;
+  position:absolute;inset:0;
+  padding:22px 26px;
+  background:linear-gradient(180deg,transparent 0%,rgba(0,0,0,.42) 100%);
+  color:#fff;
+  display:flex;flex-direction:column;justify-content:flex-end;gap:3px;
 }
-.strip-card .cap b{font-family:var(--mono);font-weight:700;color:var(--lime);font-size:14px;}
+.strip-card .cap-label{
+  font-size:9px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;
+  opacity:.65;
+}
+.strip-card .cap-pct{
+  font-family:var(--mono);font-size:40px;font-weight:700;
+  color:var(--lime);letter-spacing:-.04em;line-height:1;
+}
 
 /* ═══ TABS ═══ */
 .tab-bar{display:flex;gap:4px;margin-bottom:16px;background:var(--bg-2);padding:5px;border-radius:14px;width:fit-content;}
@@ -301,8 +312,8 @@ td.ctr{text-align:center;}
 <header class="masthead">
   <img class="crest" src="uploads/logo-pemkot.png" alt="Lambang Kota Yogyakarta">
   <div>
-    <div class="mast-name">Pemerintah Kota Yogyakarta</div>
-    <div class="mast-sub">Monitoring Transfer ke Daerah</div>
+    <div class="mast-name">Monitoring Transfer ke Daerah</div>
+    <div class="mast-sub">Pemerintah Kota Yogyakarta</div>
   </div>
   <span class="live"><span class="pulse"></span><span id="last-update">Data per 11 Jun 2026</span></span>
   <span class="year-pill">TA 2026</span>
@@ -314,13 +325,13 @@ td.ctr{text-align:center;}
     <div class="veil"></div>
     <span class="tag">Penyerapan TKD 2026</span>
     <div class="content">
+      <div class="eyebrow">Tingkat Penyerapan</div>
       <div class="big"><span data-count="47.99">0</span><span class="sym">%</span></div>
       <div class="cap">Rp 355,20 M tersalur dari pagu Rp 740,16 M</div>
       <div class="track"><div class="fill" id="hero-fill"></div></div>
     </div>
   </div>
   <div class="g-card stat-card d1">
-    <div class="pic"><span class="ico">📊</span></div>
     <div class="body">
       <span class="lbl">Total Pagu</span>
       <div class="val"><span class="rp">Rp</span><span data-count="740.16">0</span><span class="unit">M</span></div>
@@ -337,7 +348,6 @@ td.ctr{text-align:center;}
     </div>
   </div>
   <div class="g-card stat-card green-card d2">
-    <div class="pic"><span class="ico">✅</span></div>
     <div class="body">
       <span class="lbl">Total Realisasi</span>
       <div class="val"><span class="rp">Rp</span><span data-count="355.20">0</span><span class="unit">M</span></div>
@@ -349,13 +359,22 @@ td.ctr{text-align:center;}
 <!-- STRIP -->
 <section class="strip">
   <div class="strip-card s1">
-    <span class="cap">Dana Bagi Hasil <b>26,21%</b></span>
+    <div class="cap">
+      <div class="cap-label">Dana Bagi Hasil</div>
+      <div class="cap-pct">26,21%</div>
+    </div>
   </div>
   <div class="strip-card s2">
-    <span class="cap">Dana Alokasi Umum <b>48,72%</b></span>
+    <div class="cap">
+      <div class="cap-label">Dana Alokasi Umum</div>
+      <div class="cap-pct">48,72%</div>
+    </div>
   </div>
   <div class="strip-card s3">
-    <span class="cap">DAK Nonfisik <b>48,26%</b></span>
+    <div class="cap">
+      <div class="cap-label">DAK Nonfisik</div>
+      <div class="cap-pct">48,26%</div>
+    </div>
   </div>
 </section>
 
