@@ -38,28 +38,47 @@ def download_lacak_salur():
         ctx     = browser.new_context(accept_downloads=True)
         page    = ctx.new_page()
 
-        # Buka SIKD dan tunggu halaman login
+        # Step 1: Buka halaman utama SIKD
+        print("  Buka https://sikd.kemenkeu.go.id ...")
         page.goto(SIKD_URL, wait_until="networkidle")
 
-        # Isi username
-        for sel in ["input[name='username']","#username","input[type='text']"]:
+        # Step 2: Kalau ada tombol "Login" di halaman utama, klik dulu
+        login_link_selectors = [
+            "a:has-text('Login')", "a:has-text('Masuk')",
+            "a:has-text('Sign In')", "button:has-text('Login')",
+            "a[href*='login']", "a[href*='auth']",
+        ]
+        for sel in login_link_selectors:
+            if page.locator(sel).count():
+                print("  Klik tombol Login...")
+                page.click(sel)
+                page.wait_for_load_state("networkidle")
+                break
+
+        # Step 3: Isi form username/password (bisa di halaman SSO setelah redirect)
+        print(f"  URL login: {page.url}")
+        page.wait_for_selector("input[type='password']", timeout=15000)
+
+        for sel in ["input[name='username']", "#username",
+                    "input[name='email']", "input[type='text']",
+                    "input[type='email']"]:
             if page.locator(sel).count():
                 page.fill(sel, USERNAME); break
 
-        # Isi password
-        for sel in ["input[name='password']","#password","input[type='password']"]:
+        for sel in ["input[name='password']", "#password", "input[type='password']"]:
             if page.locator(sel).count():
                 page.fill(sel, PASSWORD); break
 
-        # Klik tombol login
-        for sel in ["button[type='submit']","input[type='submit']",
-                    "button:has-text('Login')","button:has-text('Masuk')",
+        # Step 4: Submit form login
+        for sel in ["button[type='submit']", "input[type='submit']",
+                    "button:has-text('Login')", "button:has-text('Masuk')",
                     "button:has-text('Sign In')"]:
             if page.locator(sel).count():
                 page.click(sel); break
 
         page.wait_for_load_state("networkidle", timeout=30000)
-        print("  Login berhasil, navigasi ke halaman Lacak Salur...")
+        print(f"  Login selesai, URL sekarang: {page.url}")
+        print("  Navigasi ke halaman Lacak Salur...")
 
         # Buka halaman tracking
         page.goto(TRACKING_URL, wait_until="networkidle")
