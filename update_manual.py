@@ -80,7 +80,7 @@ def update_html(entries):
     html = re.sub(r'const lacakRaw = \[[\s\S]*?\];', new_block, html)
 
     now  = datetime.now().strftime('%d %b %Y %H:%M')
-    html = re.sub(r'Data per: [^<"]+', f'Data per: {now}', html)
+    html = re.sub(r'Data per [^<"]+', f'Data per {now}', html)
     HTML.write_text(html, encoding='utf-8')
     print(f"  index.html diperbarui: {len(entries)} transaksi, {now}")
 
@@ -88,6 +88,12 @@ def git_push():
     env = {**os.environ,
            "PATH": os.environ.get("PATH","") + r";C:\Program Files\Git\cmd"}
     subprocess.run(["git","add","index.html"], cwd=FOLDER, env=env, check=True)
+    ada_perubahan = subprocess.run(
+        ["git","diff","--cached","--quiet"], cwd=FOLDER, env=env
+    ).returncode != 0
+    if not ada_perubahan:
+        print("  Tidak ada perubahan baru di index.html, skip commit.")
+        return
     msg = f"update: lacak salur {datetime.now().strftime('%Y-%m-%d %H:%M')}"
     subprocess.run(["git","commit","-m",msg], cwd=FOLDER, env=env, check=True)
     subprocess.run(["git","push"],            cwd=FOLDER, env=env, check=True)
@@ -121,7 +127,7 @@ if __name__ == "__main__":
 
     print("\n" + "=" * 52)
     print("  SELESAI!")
-    print("  Dashboard: https://sliwerwolf.github.io/tkd/")
+    print("  Dashboard: https://kasdayk.github.io/tkd/")
     print("  (aktif dalam ~1 menit)")
     print("=" * 52)
     input("\nTekan Enter untuk menutup...")

@@ -289,6 +289,34 @@ td.ctr{text-align:center;}
 .lacak-jenis{font-size:11px;font-weight:700;border-radius:99px;padding:3px 10px;white-space:nowrap;}
 .jenis-dbh{background:#d1e8e6;color:#0a3835;}
 .jenis-dau{background:#d5eacc;color:#1c4010;}
+
+/* Sumber Dana Filter select */
+.filter-group select{
+  height:38px;padding:0 30px 0 12px;
+  border:1.5px solid var(--line);border-radius:10px;
+  background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2384958b' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 10px center;
+  font-family:var(--font);font-size:13px;color:var(--text);
+  -webkit-appearance:none;appearance:none;cursor:pointer;outline:none;min-width:210px;
+}
+.filter-group select:focus{border-color:var(--teal);}
+
+/* Summary Cards per Sumber Dana */
+.sumber-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 0 18px;}
+.sumber-card{
+  background:var(--card);border-radius:14px;padding:14px 18px;
+  box-shadow:var(--shadow-soft);border:1.5px solid var(--line);
+  cursor:pointer;transition:border-color .15s,box-shadow .15s,background .15s;
+  display:flex;flex-direction:column;gap:3px;
+}
+.sumber-card:hover{border-color:var(--teal);box-shadow:var(--shadow-lift);}
+.sumber-card.sc-active{border-color:var(--teal);background:var(--teal-soft);}
+.sc-badge{display:inline-block;font-size:10.5px;font-weight:700;border-radius:99px;padding:2px 9px;margin-bottom:4px;}
+.sc-dbh .sc-badge{background:#d1e8e6;color:#0a3835;}
+.sc-dau .sc-badge{background:#d5eacc;color:#1c4010;}
+.sc-dak .sc-badge{background:#eef5d9;color:#3a5a10;}
+.sc-trx{font-size:11px;color:var(--muted);}
+.sc-nilai{font-size:16px;font-weight:800;color:var(--teal-deep);letter-spacing:-.02em;line-height:1.2;}
+.sc-nilai em{font-size:10.5px;font-weight:500;color:var(--muted);font-style:normal;margin-left:3px;}
 .jenis-dak{background:#eef5d9;color:#3a5a10;}
 
 /* ═══ FOOTER ═══ */
@@ -418,9 +446,32 @@ td.ctr{text-align:center;}
       <label>Sampai Tanggal</label>
       <input type="date" id="date-to" onchange="renderLacak()">
     </div>
+    <div class="filter-group">
+      <label>Sumber Dana</label>
+      <select id="jenis-filter" onchange="renderLacak()">
+        <option value="">Semua Jenis Dana</option>
+      </select>
+    </div>
     <button class="btn" onclick="resetFilter()">Reset Filter</button>
     <button class="btn green" onclick="downloadExcel()">&#8595; Download Excel</button>
     <span class="filter-info" id="filter-info">Menampilkan semua transaksi</span>
+  </div>
+  <div id="sumber-summary" class="sumber-summary">
+    <div class="sumber-card sc-dbh" id="sc-dbh" onclick="filterBySumber('61')">
+      <span class="sc-badge">Dana Bagi Hasil</span>
+      <div class="sc-trx" id="sc-dbh-trx">—</div>
+      <div class="sc-nilai" id="sc-dbh-val">—</div>
+    </div>
+    <div class="sumber-card sc-dau" id="sc-dau" onclick="filterBySumber('62')">
+      <span class="sc-badge">Dana Alokasi Umum</span>
+      <div class="sc-trx" id="sc-dau-trx">—</div>
+      <div class="sc-nilai" id="sc-dau-val">—</div>
+    </div>
+    <div class="sumber-card sc-dak" id="sc-dak" onclick="filterBySumber('65')">
+      <span class="sc-badge">DAK Nonfisik</span>
+      <div class="sc-trx" id="sc-dak-trx">—</div>
+      <div class="sc-nilai" id="sc-dak-val">—</div>
+    </div>
   </div>
   <div class="table-wrap">
     <table>
@@ -593,6 +644,48 @@ const TOTAL_PAGU = 740159537000, TOTAL_REAL = 355204757600;
 // ════════════════════════════════════════════════════════════
 function fmt(n) { if (!n) return "0"; return n.toLocaleString("id-ID"); }
 
+function cleanUraian(s) {
+  return s.replace(/^Alokasi\s+/i, "").replace(/\s+yang disalurkan$/i, "");
+}
+
+function cleanParLabel(s) {
+  return s.replace(/^(Belanja|Transfer)\s+/i, "");
+}
+
+function buildJenisOptions() {
+  const activePars = [...new Set(lacakRaw.map(r => r.par))].sort();
+
+  const parLabel = {};
+  for (const [kode, uraian] of alokasiRaw) {
+    if (kode.length === 6) parLabel[kode] = cleanParLabel(uraian);
+  }
+
+  const GROUPS = { "61":"Dana Bagi Hasil", "62":"Dana Alokasi Umum", "65":"DAK Nonfisik" };
+
+  const grouped = {};
+  for (const par of activePars) {
+    const pfx = par.substring(0, 2);
+    if (!grouped[pfx]) grouped[pfx] = [];
+    grouped[pfx].push(par);
+  }
+
+  const sel = document.getElementById("jenis-filter");
+  sel.innerHTML = '<option value="">Semua Jenis Dana</option>';
+
+  const orderedPfx = [...new Set([...Object.keys(GROUPS), ...Object.keys(grouped)])];
+  for (const pfx of orderedPfx) {
+    if (!grouped[pfx]) continue;
+    const groupName = GROUPS[pfx] || ("Dana " + pfx);
+    const og = document.createElement("optgroup");
+    og.label = groupName;
+    og.appendChild(new Option("Semua " + groupName, pfx));
+    for (const par of grouped[pfx]) {
+      og.appendChild(new Option("· " + (parLabel[par] || par), par));
+    }
+    sel.appendChild(og);
+  }
+}
+
 function getJenisDana(par) {
   const p = par.substring(0, 2);
   if (p === "61") return { label: "Dana Bagi Hasil",        cls: "jenis-dbh" };
@@ -701,6 +794,23 @@ function expandAll() {
 //  RENDER — Lacak Salur Tab
 // ════════════════════════════════════════════════════════════
 function getFilteredData() {
+  const from  = document.getElementById("date-from").value;
+  const to    = document.getElementById("date-to").value;
+  const jenis = document.getElementById("jenis-filter").value;
+  const d1 = from ? new Date(from) : null;
+  const d2 = to   ? new Date(to)   : null;
+  return lacakRaw.filter(r => {
+    const d = parseDate(r.tgl);
+    if (d1 && d < d1) return false;
+    if (d2 && d > d2) return false;
+    if (jenis) {
+      if (jenis.length === 6 ? r.par !== jenis : !r.par.startsWith(jenis)) return false;
+    }
+    return true;
+  });
+}
+
+function getDateFilteredData() {
   const from = document.getElementById("date-from").value;
   const to   = document.getElementById("date-to").value;
   const d1 = from ? new Date(from) : null;
@@ -714,12 +824,13 @@ function getFilteredData() {
 }
 
 function renderLacak() {
-  const data = getFilteredData();
-  const from = document.getElementById("date-from").value;
-  const to   = document.getElementById("date-to").value;
-  const info = document.getElementById("filter-info");
+  const data  = getFilteredData();
+  const from  = document.getElementById("date-from").value;
+  const to    = document.getElementById("date-to").value;
+  const jenis = document.getElementById("jenis-filter").value;
+  const info  = document.getElementById("filter-info");
 
-  if (from || to) {
+  if (from || to || jenis) {
     info.textContent = `${data.length} transaksi ditemukan`;
     info.style.color = "var(--teal)";
   } else {
@@ -727,11 +838,26 @@ function renderLacak() {
     info.style.color = "var(--muted)";
   }
 
+  // update summary cards (pakai data filter tanggal saja, bukan filter jenis)
+  const byDate = getDateFilteredData();
+  const grp = { "61":{trx:0,val:0}, "62":{trx:0,val:0}, "65":{trx:0,val:0} };
+  for (const r of byDate) {
+    const g = r.par.substring(0, 2);
+    if (grp[g]) { grp[g].trx++; grp[g].val += r.bersih; }
+  }
+  const cardMap = { "61":"sc-dbh", "62":"sc-dau", "65":"sc-dak" };
+  for (const [pfx, id] of Object.entries(cardMap)) {
+    const g = grp[pfx];
+    document.getElementById(id + "-trx").textContent = g.trx + " transaksi";
+    document.getElementById(id + "-val").innerHTML   = fmt(g.val) + "<em>bersih</em>";
+    document.getElementById(id).classList.toggle("sc-active", !!jenis && jenis.startsWith(pfx));
+  }
+
   let sumK = 0, sumP = 0, sumB = 0, rows = "";
   for (const r of data) {
     sumK += r.kotor; sumP += r.pot; sumB += r.bersih;
     const jd = getJenisDana(r.par);
-    const ur = leafUraian[r.par + "|" + r.alok] || (r.par + " — " + r.alok);
+    const ur = cleanUraian(leafUraian[r.par + "|" + r.alok] || (r.par + " — " + r.alok));
     rows += `<tr>
       <td style="font-family:var(--mono);font-size:12px">${r.tgl}</td>
       <td class="ctr"><span class="lacak-jenis ${jd.cls}">${jd.label}</span></td>
@@ -758,8 +884,15 @@ function renderLacak() {
 }
 
 function resetFilter() {
-  document.getElementById("date-from").value = "";
-  document.getElementById("date-to").value   = "";
+  document.getElementById("date-from").value    = "";
+  document.getElementById("date-to").value      = "";
+  document.getElementById("jenis-filter").value = "";
+  renderLacak();
+}
+
+function filterBySumber(prefix) {
+  const sel = document.getElementById("jenis-filter");
+  sel.value = (sel.value === prefix) ? "" : prefix;
   renderLacak();
 }
 
@@ -774,7 +907,7 @@ function downloadExcel() {
     rows.push([
       r.tgl,
       getJenisDana(r.par).label,
-      leafUraian[r.par + "|" + r.alok] || r.alok,
+      cleanUraian(leafUraian[r.par + "|" + r.alok] || r.alok),
       r.periode || "",
       r.kotor, r.pot, r.bersih
     ]);
@@ -840,6 +973,7 @@ requestAnimationFrame(() => requestAnimationFrame(() => {
   document.getElementById("seg-dak").style.width    = "20.6%";
 }));
 
+buildJenisOptions();
 render();
 </script>
 </body>

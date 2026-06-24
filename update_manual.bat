@@ -10,3 +10,4 @@ echo.
 echo  Pastikan file XLS dari SIKD sudah ada di folder ini!
 echo.
 python update_manual.py
+if errorlevel 1 pause
